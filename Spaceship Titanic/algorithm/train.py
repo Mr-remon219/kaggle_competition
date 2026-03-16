@@ -1,12 +1,13 @@
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from data_utils import WheatDataset
+from data_utils import TrainDataset
 from resnet18_for_1d.resnet181d import ResNet181D
+import torch
 
 
 if __name__ == "__main__":
-    dataset = WheatDataset()
+    dataset = TrainDataset()
     loader = DataLoader(dataset, batch_size=64, shuffle=True)
 
     num_classes = 2
@@ -33,3 +34,5 @@ if __name__ == "__main__":
             optimizer.step()
 
         print("当前循环为第%d轮， 误差为：%.3f" % (epoch, total_loss / total_sample))
+
+    torch.save(model.state_dict(), "model.pth")
