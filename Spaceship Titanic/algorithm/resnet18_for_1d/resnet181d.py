@@ -19,6 +19,8 @@ class BasicBlock1D(nn.Module):
         self.conv3 = nn.Conv1d(in_channels=out_channels, out_channels=out_channels, kernel_size=3, stride=1, padding=1)
         self.bn4 = nn.BatchNorm1d(out_channels)
 
+        self.downsample = nn.Conv1d(self.in_channels, self.out_channels, kernel_size=1, stride=1, padding=0)
+
         self.process = process
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -37,8 +39,7 @@ class BasicBlock1D(nn.Module):
         out = self.bn4(out)
 
         if self.process:
-            downsample = nn.Conv1d(self.in_channels, self.out_channels, kernel_size=1, stride=1, padding=0)
-            identity = downsample(identity)
+            identity = self.downsample(identity)
 
         out += identity
         out = self.relu(out)
