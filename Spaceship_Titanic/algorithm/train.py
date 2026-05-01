@@ -1,8 +1,8 @@
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from data_utils import TrainDataset
-from resnet18_for_1d.resnet181d import ResNet181D
+from .data_utils import TrainDataset
+from .resnet18_for_1d.resnet181d import ResNet181D
 import torch
 
 
