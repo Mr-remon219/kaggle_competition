@@ -2,9 +2,11 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
+from .config import DATA_DIR
 
-filepath = {"train": "./data/train.csv", "test": "./data/test.csv"}
+filepath = {"train": DATA_DIR / "train.csv", "test": DATA_DIR / "test.csv"}
 str_process = 5
+
 
 def data_init(file_path):
     df = pd.read_csv(file_path)
@@ -19,7 +21,7 @@ def data_init(file_path):
         df[df.columns[i]] = value
     col = df.columns[6]
     df[col] = df[col].replace({False: 0, True: 1})
-    if file_path == "train":
+    if file_path == filepath["train"]:
         col = df.columns[-1]
         df[col] = df[col].replace({False: 0, True: 1})
     value, keys = pd.factorize(df[df.columns[12]])
@@ -34,8 +36,8 @@ class TrainDataset(Dataset):
     def __init__(self):
         super().__init__()
         self.file = data_init(filepath["train"])
-        self.feature = self.file.iloc[:, 1 : -1].to_numpy(dtype=np.float32)
-        self.label = self.file.iloc[:,  -1].to_numpy(dtype=np.long)
+        self.feature = self.file.iloc[:, 1:-1].to_numpy(dtype=np.float32)
+        self.label = self.file.iloc[:, -1].to_numpy(dtype=np.long)
 
     def __len__(self):
         return len(self.feature)
@@ -46,11 +48,12 @@ class TrainDataset(Dataset):
 
         return x, y
 
+
 class TestDataset(Dataset):
     def __init__(self):
         super().__init__()
         self.file = data_init(filepath["test"])
-        self.feature = self.file.iloc[:, 1 : ].to_numpy(dtype=np.float32)
+        self.feature = self.file.iloc[:, 1:].to_numpy(dtype=np.float32)
 
     def __len__(self):
         return len(self.feature)
@@ -59,6 +62,7 @@ class TestDataset(Dataset):
         x = torch.tensor(self.feature[idx], dtype=torch.float32)
 
         return x
+
 
 if __name__ == "__main__":
     train_dataset = TrainDataset()
