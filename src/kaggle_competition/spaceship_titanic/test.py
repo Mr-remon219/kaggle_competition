@@ -12,6 +12,8 @@ def test():
     model_path = MODEL_DIR / "model.pth"
     output_path = OUTPUT_DIR / "submission.csv"
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     dataset = TestDataset()
     test_loader = DataLoader(dataset, batch_size=256, shuffle=False)
     model = ResNet181D(1, 2)
@@ -23,11 +25,13 @@ def test():
     else:
         state_dict = check_point
     model.load_state_dict(state_dict)
+    model = model.to(device)
 
     model.eval()
     preds = []
     with torch.no_grad():
         for data in test_loader:
+            data = data.to(device)
             data = data.unsqueeze(1)
             output = model(data)
             batch_pred = torch.argmax(output, dim=1)
