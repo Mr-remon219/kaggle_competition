@@ -9,12 +9,14 @@ from .config import MODEL_DIR
 
 
 def train():
-    dataset = TrainDataset()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("当前使用设备:%s" % device)
 
+    dataset = TrainDataset()
     loader = DataLoader(dataset, batch_size=64, shuffle=True)
 
     num_classes = 2
-    model = ResNet181D(1, num_classes)
+    model = ResNet181D(1, num_classes).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -26,6 +28,9 @@ def train():
         total_sample = 0
 
         for x, y in loader:
+            x = x.to(device, non_blocking=True)
+            y = y.to(device, non_blocking=True)
+            
             batch_size = y.shape[0]
             total_sample += batch_size
             x = x.unsqueeze(1)
