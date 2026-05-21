@@ -30,7 +30,7 @@ def train():
         for x, y in loader:
             x = x.to(device, non_blocking=True)
             y = y.to(device, non_blocking=True)
-            
+
             batch_size = y.shape[0]
             total_sample += batch_size
             x = x.unsqueeze(1)

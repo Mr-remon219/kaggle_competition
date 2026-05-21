@@ -5,7 +5,7 @@ from torch.nn import functional as F
 
 class Inception(nn.Moudle):
     def __init__(
-        self, in_channel: int, c1: int, c2: int, c3: int, c4: int, is_1D: bool = True
+        self, in_channel: int, c1: int, c2: int, c3: int, c4: int, is_1D: bool = False
     ):
         super().__init__()
         if is_1D:
