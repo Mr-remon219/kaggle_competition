@@ -11,17 +11,26 @@ from .config import MODEL_DIR
 def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("当前使用设备:%s" % device)
+    model_path = MODEL_DIR / "model.pth"
 
     dataset = TrainDataset()
     loader = DataLoader(dataset, batch_size=64, shuffle=True)
 
     num_classes = 2
-    model = ResNet181D(1, num_classes).to(device)
+    model = ResNet181D(1, num_classes)
+    if model_path.exists():
+        check_point = torch.load(model_path, map_location="cpu")
+        if "model_state_dict" in check_point:
+            state_dict = check_point["model_state_dict"]
+        else:
+            state_dict = check_point
+        model.load_state_dict(state_dict)
+    model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
-    for epoch in range(100):
+    for epoch in range(1000):
         model.train()
 
         total_loss = 0

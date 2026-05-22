@@ -117,7 +117,7 @@ class ResNet(nn.Module):
 
         if self.in_channels != channels or stride != 1:
             downsample = nn.Sequential(
-                conv_x1(self.in_channels, channels, is_1D=is_1D), norm_layer(channels)
+                conv_x1(self.in_channels, channels, stride=stride, is_1D=is_1D), norm_layer(channels)
             )
 
         layer = []

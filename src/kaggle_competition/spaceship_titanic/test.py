@@ -35,7 +35,7 @@ def test():
             data = data.unsqueeze(1)
             output = model(data)
             batch_pred = torch.argmax(output, dim=1)
-            preds.extend(batch_pred.numpy())
+            preds.extend(batch_pred.cpu().numpy())
 
     sub_df = pd.read_csv(data_dir / "sample_submission.csv")
     sub_df["Transported"] = pd.Series(preds).astype(bool)
