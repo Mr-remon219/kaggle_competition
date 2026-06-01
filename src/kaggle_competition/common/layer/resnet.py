@@ -27,7 +27,7 @@ class BasicBlock(nn.Module):
                 norm_layer = nn.BatchNorm1d
             self.conv1 = conv_x3(in_channels, channels, stride, is_1D=True)
             self.bn1 = norm_layer(channels)
-            self.relu = nn.ReLU(inplace=True)
+            self.relu = nn.PReLU()
             self.conv2 = conv_x3(channels, channels, is_1D=True)
             self.bn2 = norm_layer(channels)
 
@@ -36,7 +36,7 @@ class BasicBlock(nn.Module):
                 norm_layer = nn.BatchNorm2d
             self.conv1 = conv_x3(in_channels, channels, stride)
             self.bn1 = norm_layer(channels)
-            self.relu = nn.ReLU(inplace=True)
+            self.relu = nn.PReLU()
             self.conv2 = conv_x3(channels, channels)
             self.bn2 = norm_layer(channels)
 
@@ -86,7 +86,7 @@ class ResNet(nn.Module):
 
         self.conv1 = conv_x7(init_channels, self.in_channels, is_1D=is_1D)
         self.bn1 = norm_layer(64)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.PReLU()
         self.maxpool = maxpool_x3(is_1D=is_1D)
 
         self.layer1 = self._make_layer(64, layers[0], strides[0])
@@ -103,7 +103,7 @@ class ResNet(nn.Module):
 
         for m in self.modules():
             if isinstance(m, (nn.Conv1d, nn.Conv2d)):
-                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="leaky_relu", a=0.25)
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)

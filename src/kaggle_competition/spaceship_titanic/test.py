@@ -10,6 +10,7 @@ from .config import DATA_DIR, MODEL_DIR, OUTPUT_DIR
 def test():
     data_dir = DATA_DIR
     model_path = MODEL_DIR / "model.pth"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = OUTPUT_DIR / "submission.csv"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
