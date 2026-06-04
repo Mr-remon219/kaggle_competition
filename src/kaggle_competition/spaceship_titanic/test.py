@@ -2,12 +2,13 @@ from torch.utils.data import DataLoader
 import torch
 import pandas as pd
 
-from .data_utils import TestDataset
-from .model.resnet181d import ResNet181D
-from .config import DATA_DIR, MODEL_DIR, OUTPUT_DIR
+from .data_utils import TestDataset, tta_predict
+from .model.resnet1D import ResNet1D
+from .config import DATA_DIR, MODEL_DIR, OUTPUT_DIR, set_seed
 
 
 def test():
+    set_seed(42)
     data_dir = DATA_DIR
     model_path = MODEL_DIR / "model.pth"
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -17,9 +18,9 @@ def test():
 
     dataset = TestDataset()
     test_loader = DataLoader(dataset, batch_size=256, shuffle=False)
-    model = ResNet181D(1, 2)
+    model = ResNet1D(1, 2, dropout=0.3)
 
-    check_point = torch.load(model_path, map_location="cpu")
+    check_point = torch.load(model_path, map_location="cpu", weights_only=False)
 
     if "model_state_dict" in check_point:
         state_dict = check_point["model_state_dict"]
@@ -28,15 +29,11 @@ def test():
     model.load_state_dict(state_dict)
     model = model.to(device)
 
-    model.eval()
     preds = []
-    with torch.no_grad():
-        for data in test_loader:
-            data = data.to(device)
-            data = data.unsqueeze(1)
-            output = model(data)
-            batch_pred = torch.argmax(output, dim=1)
-            preds.extend(batch_pred.cpu().numpy())
+    for data in test_loader:
+        data = data.to(device)
+        batch_pred = tta_predict(model, data, num_aug=7).argmax(dim=1)
+        preds.extend(batch_pred.cpu().numpy())
 
     sub_df = pd.read_csv(data_dir / "sample_submission.csv")
     sub_df["Transported"] = pd.Series(preds).astype(bool)

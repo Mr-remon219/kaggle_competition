@@ -70,9 +70,10 @@ class ResNet(nn.Module):
         strides: list[int],
         norm_layer: Optional[nn.Module] = None,
         is_1D: bool = False,
+        dropout: float = 0.3,
     ) -> None:
         super().__init__()
-        self.in_channels = 64
+        self.in_channels = 16
         self.num_classes = num_classes
         self.is_1D = is_1D
 
@@ -85,21 +86,25 @@ class ResNet(nn.Module):
                 norm_layer = self.norm_layer
 
         self.conv1 = conv_x7(init_channels, self.in_channels, is_1D=is_1D)
-        self.bn1 = norm_layer(64)
+        self.bn1 = norm_layer(self.in_channels)
         self.relu = nn.PReLU()
         self.maxpool = maxpool_x3(is_1D=is_1D)
 
-        self.layer1 = self._make_layer(64, layers[0], strides[0])
-        self.layer2 = self._make_layer(128, layers[1], strides[1])
-        self.layer3 = self._make_layer(256, layers[2], strides[2])
-        self.layer4 = self._make_layer(512, layers[3], strides[3])
+        _drop = lambda: nn.Dropout(dropout) if dropout > 0 else nn.Identity()
+
+        self.layer1 = self._make_layer(32, layers[0], strides[0])
+        self.layer2 = self._make_layer(64, layers[1], strides[1])
+        self.dropout1 = _drop()
+        self.layer3 = self._make_layer(128, layers[2], strides[2])
+        self.dropout2 = _drop()
+        self.layer4 = self._make_layer(256, layers[3], strides[3])
 
         if is_1D:
             self.avgpool = nn.AdaptiveAvgPool1d(1)
         else:
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
-        self.fc = nn.Linear(512, num_classes)
+        self.fc = nn.Linear(256, num_classes)
 
         for m in self.modules():
             if isinstance(m, (nn.Conv1d, nn.Conv2d)):
@@ -145,7 +150,9 @@ class ResNet(nn.Module):
 
         out = self.layer1(out)
         out = self.layer2(out)
+        out = self.dropout1(out)
         out = self.layer3(out)
+        out = self.dropout2(out)
         out = self.layer4(out)
 
         out = self.avgpool(out)
@@ -162,6 +169,7 @@ def _resnet(
     strides: list[int],
     norm_layer: Optional[nn.Module] = None,
     is_1D: bool = False,
+    dropout: float = 0.3,
 ) -> nn.Module:
 
-    return ResNet(init_channels, num_classes, layers, strides, norm_layer, is_1D=is_1D)
+    return ResNet(init_channels, num_classes, layers, strides, norm_layer, is_1D=is_1D, dropout=dropout)
